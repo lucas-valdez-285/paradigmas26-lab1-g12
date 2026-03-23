@@ -21,7 +21,7 @@ object PostParser {
 
   type Post = (String, String, String, String)
 
-  def parsePosts(json: String, subreddit: String): List[Post] = {
+  def parsePosts(json: String, subreddit: String): Option[List[Post]] = {
     implicit val formats: DefaultFormats.type = DefaultFormats
 
 
@@ -31,7 +31,7 @@ object PostParser {
     val children = (parsed \ "data" \ "children")
 
 
-    children.children.flatMap { post =>
+    Some(children.children.flatMap { post =>
       val data = post \ "data"
 
 
@@ -46,8 +46,8 @@ object PostParser {
             val formattedDate = Formatters.formatDateFromUTC(date.toLong)
             Some((subreddit, title, text, formattedDate))
 
-        case _ => None
+        case _ => null
       }
-    }
+    })
   }
 }

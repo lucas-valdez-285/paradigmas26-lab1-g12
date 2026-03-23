@@ -5,7 +5,7 @@ import org.json4s.jackson.JsonMethods._
 object FileIO {
   type Subscription = (String, String)
 
-  def readSubscriptions(path: String): List[Subscription] = {
+  def readSubscriptions(path: String): Option[List[Subscription]] = {
     try {
       val source = Source.fromFile(path)
       val content = source.mkString
@@ -19,9 +19,9 @@ object FileIO {
         val url = (sub \ "url").extract[String]
         (name, url)
       }
-      subscriptions
+      Some(subscriptions)
     } catch {
-      case _: Exception => Nil
+      case _: Exception => None
     }
   }
 
