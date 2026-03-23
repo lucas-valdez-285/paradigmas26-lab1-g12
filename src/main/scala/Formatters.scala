@@ -38,13 +38,13 @@ object PostParser {
       val titleOpt = (data \ "title").extractOpt[String]
       val textOpt = (data \ "selftext").extractOpt[String]
       val dateOpt = (data \ "created_utc").extractOpt[Double]
-
-
+      
       (titleOpt, textOpt, dateOpt) match {
-        case (Some(title), Some(text), Some(date)) =>
-          val formattedDate = Formatters.formatDateFromUTC(date.toLong)
-          Some((subreddit, title, text, formattedDate))
+        case (Some(title), Some(text), Some(date)) 
+         if title.trim.nonEmpty && text.trim.nonEmpty =>
 
+            val formattedDate = Formatters.formatDateFromUTC(date.toLong)
+            Some((subreddit, title, text, formattedDate))
 
         case _ => None
       }
