@@ -1,10 +1,53 @@
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
 
 object Formatters {
 
-  // Pure function to format posts from a subscription
-  def formatSubscription(url: String, posts: String): String = {
-    val header = s"\n${"=" * 80}\nPosts from: $url \n${"=" * 80}"
-    val formattedPosts = posts.take(80)
-    header + "\n" + formattedPosts
+
+  def formatDateFromUTC(timestamp: Long): String = {
+    val instant = Instant.ofEpochSecond(timestamp)
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    formatter.format(instant.atZone(ZoneId.systemDefault()))
+  }
+}
+
+
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+
+object PostParser {
+
+  type Post = (String, String, String, String)
+
+  def parsePosts(json: String, subreddit: String): Option[List[Post]] = {
+    implicit val formats: DefaultFormats.type = DefaultFormats
+
+
+    val parsed = parse(json)
+
+
+    val children = (parsed \ "data" \ "children")
+
+
+    Some(children.children.flatMap { post =>
+      val data = post \ "data"
+
+
+      val titleOpt = (data \ "title").extractOpt[String]
+      val textOpt = (data \ "selftext").extractOpt[String]
+      val dateOpt = (data \ "created_utc").extractOpt[Double]
+      
+      (titleOpt, textOpt, dateOpt) match {
+        case (Some(title), Some(text), Some(date)) 
+         if title.trim.nonEmpty && text.trim.nonEmpty =>
+
+            val formattedDate = Formatters.formatDateFromUTC(date.toLong)
+            Some((subreddit, title, text, formattedDate))
+
+        case _ => null
+      }
+    })
   }
 }
