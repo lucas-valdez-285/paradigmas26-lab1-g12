@@ -18,5 +18,5 @@ object Main extends App {
       }
   }
 
-  allPosts.foreach(println)
+  println(TextProcessing.reportBySubreddit(allPosts))
 }
